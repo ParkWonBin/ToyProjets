@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatting with GPT</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #chat-title {
+            display: flex;
+            flex-direction: column;
+            background-color: #715253;
+            color: white;
+            font-weight: bold;
+            padding: 10px 15px;
+        }
+        #chat-title>*{
+            flex: 1;
+            margin: 5px 0px;
+        }
+        #chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column; /* 요소들을 세로 방향으로 쌓음 */
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #b5cad7;
+        }
+        #new-message-container {
+            display: flex;
+            margin: 10px;
+        }
+        #API_KEY {
+            display: flex;
+            padding: 5px 10px;
+            /*width: fit-content;*/
+        }
+        #new-message {
+            flex: 1;
+            padding: 10px;
+            resize: none;
+        }
+        button {
+            padding: 10px 20px;
+        }
+        .message{
+            align-items: flex-start; /* 기본적으로 왼쪽 정렬 */
+            width: fit-content;
+            max-width: 80%;
+            font-weight: bold;
+            border-radius: 8px; /* 테두리 둥글게 */
+            padding: 15px;
+            margin: 5px;
+        }
+        .user{
+            background-color: #ffff00;
+            align-self: flex-end; /* 오른쪽 정렬 */
+            text-align: right; /* 텍스트 오른쪽 */
+        }
+        .assistant{
+            background-color: white;
+
+        }
+    </style>
+
+    <script>
+        async function askToGPT() {
+            let API_KEY = $('#API_KEY')[0].value
+            if (API_KEY === ''){
+                alert("API KEY를 입력해주세요")
+                return "API KEY를 입력해주세요! <br><a href='https://platform.openai.com/api-keys' target=\"_blank\">OpenAI 바로가기</a>"
+            }
+
+            const messages = $("#chat-container").children().map(function() {
+                return {
+                    role: $(this).attr('role'), // 'role' 속성의 값을 가져옵니다
+                    content: $(this).text() // 요소의 텍스트 내용을 가져옵니다
+                };
+            }).get();
+
+            const response = await $.ajax({
+                url: 'https://api.openai.com/v1/chat/completions', // 여기에 서버의 엔드포인트를 지정해야 합니다.
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: messages,
+                    max_tokens: 1024
+                }),
+                headers: {
+                    Authorization: `Bearer ${API_KEY}`  // 서버에서 처리할 경우 이 줄은 필요 없습니다.
+                }
+            });
+
+            return response.choices[0].message.content;
+        }
+
+
+        function sendMessage() {
+            var messageContainer = document.getElementById('chat-container');
+            var newMessageInput = document.getElementById('new-message');
+            var newMessage = newMessageInput.value.replace(/\n/g, '<br>');
+            if (newMessage.trim() !== '') {
+                var messageElement = document.createElement('div');
+                messageElement.className = 'message user'
+                messageElement.setAttribute('role','user')
+                messageElement.innerHTML = newMessage;
+                messageContainer.appendChild(messageElement);
+                newMessageInput.value = '';
+                messageContainer.scrollTop = messageContainer.scrollHeight;
+
+                resiveMessage(newMessage)
+            }
+        }
+        async function resiveMessage(message) {
+            console.log(message)
+            var messageContainer = document.getElementById('chat-container');
+            var messageElement = document.createElement('div');
+            messageElement.className = 'message assistant'
+            messageElement.innerHTML = '...GPT 응답 기다리는 중...';
+            messageElement.setAttribute('role', 'assistant')
+            messageContainer.appendChild(messageElement);
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+
+            messageElement.innerHTML = await askToGPT();
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
+
+        $(function(){
+            $('#new-message').keypress(function(e){
+                if(e.which === 13 && !e.shiftKey){ // 엔터 키가 눌렸고, Shift 키는 눌리지 않았을 때
+                    sendMessage();
+                }
+            });
+        });
+
+        </script>
+    </head>
+<body>
+<div id="chat-title">
+    <strong>ChatGPT API와 연결된 채팅방입니다.</strong>
+    <input id="API_KEY" type="text" placeholder="GPT-API key를 입력하세요">
+</div>
+<div id="chat-container">
+    <!-- Chat messages will go here -->
+    <div class="message assistant" role="assistant">안녕하세요. 무엇을 도와드릴까요?</div>
+</div>
+<div id="new-message-container">
+    <textarea id="new-message"  placeholder="메시지를 입력하세요..."></textarea>
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+</body>
+</html>

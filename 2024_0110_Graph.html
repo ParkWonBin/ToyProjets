@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph-JQuery를 왜 배워야 하는가</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        #graph-container {
+            display: flex;
+            height: 200px; /* Container height */
+            align-items: flex-end;
+            background-color: #f0f0f0; /* Background color of the graph container */
+            padding: 10px;
+            box-sizing: border-box;
+            max-width: 800px;
+        }
+
+        #graph-container span {
+            flex: 1;
+            margin: 0 2px;
+            background-color: blue; /* Bar color */
+        }
+    </style>
+    <script>
+        const data = {
+            "1월": 10, "2월": 12, "3월": 15, "4월": 20, "5월": 15, "6월": 18,
+            "7월": 20, "8월": 12, "9월": 18, "10월": 15, "11월": 10, "12월": 5
+        };
+
+        function init(){
+            [...$('#graph-container').children()].forEach((elem)=>{
+                // 좌클릭 이벤트
+                elem.addEventListener("click", function(event) {
+                    event.preventDefault();  // 기본 동작 방지
+                    data[elem.id] += 1;
+                    updateGraph()
+                });
+
+                // 우클릭 이벤트 처리
+                elem.addEventListener("contextmenu", function(event) {
+                    event.preventDefault();  // 기본 동작 방지
+                    data[elem.id] -= 1;
+                    updateGraph()
+                });
+
+            })
+        }
+
+        function updateGraph(){
+            const maxValue = Math.max(...Object.values(data));
+            const containerHeight = $('#graph-container')[0].clientHeight;
+
+            Object.entries(data).forEach(([month, value]) => {
+                const barHeight = (value / maxValue) * containerHeight;
+                $(`#${month}`).css('height',`${barHeight}px`)
+            });
+        }
+
+        $(init)
+        $(updateGraph)
+
+
+    </script>
+</head>
+<body>
+<h3>예시 JQurery</h3>
+<h4>개발자도구(F12) Console에 아래 코드를 입력해보세요</h4>
+<h4>개발자 도구에서 붙여넣기가 안된다면 "<b style="color:red">allow pasting</b>"을 입력 후 다시 붙여넣기를 시도해보세요.</h4>
+<p>$('#graph-container span:even').css('background-color','red')</p>
+<p>$('#graph-container span:gt(4)').css('background-color','green')</p>
+<p>$('#graph-container span:lt(4)').css('background-color','aqua')</p>
+<p>$('#graph-container span:nth-child(3n)').css('background-color','Tomato')</p>
+<p>$('#graph-container span:nth-child(2n+1)').css('background-color','Gray')</p>
+<p>$('#graph-container span:first').css('background-color','Orange')</p>
+<p>$('#graph-container span:last').css('background-color','SlateBlue')</p>
+
+<h4>아래 막대그래프를 좌클릭/우클릭 하면 그래프의 크기가 변합니다.</h4>
+<h4>그래프 클릭 시 데이터가 변하는 것 또한 JQuery 를 사용하여 이벤트 등록한 것입니다.</h4>
+
+<div id="graph-container">
+    <span id="1월"></span>
+    <span id="2월"></span>
+    <span id="3월"></span>
+    <span id="4월"></span>
+    <span id="5월"></span>
+    <span id="6월"></span>
+    <span id="7월"></span>
+    <span id="8월"></span>
+    <span id="9월"></span>
+    <span id="10월"></span>
+    <span id="11월"></span>
+    <span id="12월"></span>
+</div>
+<p><b>고급진 예시 :</b> html,css,jquery로 만든 <a href='https://codepen.io/vilakkuparalps/pen/poqBBpR' target="_blank">태양계 시뮬레이터</a></p>
+
+</body>
+</html>
